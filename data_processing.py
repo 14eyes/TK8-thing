@@ -198,3 +198,32 @@ def calculate_win_rates_with_confidence_interval(master_df, confidence_level=0.9
 
     return win_rates, intervals
 
+def calculate_win_rates_with_confidence_interval_vs(master_df, confidence_level=0.95):
+    win_counts = {}
+    # Iterate over each character ID and count each win against each character
+    for char_id in char_dict.keys():
+        win_counts[char_id] = Counter(master_df[(master_df['winResult'] == 1) & (master_df['1pCharaId'] == char_id)]['2pCharaId'])
+        win_counts[char_id] += Counter(master_df[(master_df['winResult'] == 2) & (master_df['2pCharaId'] == char_id)]['1pCharaId'])
+    
+    win_rates_vs = {char_dict[char_id_1]: {char_dict[char_id_2]: 0 for char_id_2 in sorted(char_dict.keys())} for char_id_1 in sorted(char_dict.keys())}
+    intervals_vs = {char_dict[char_id_1]: {char_dict[char_id_2]: (0, 0) for char_id_2 in sorted(char_dict.keys())} for char_id_1 in sorted(char_dict.keys())}
+
+    # Calculate the win rates and confidence intervals
+    for char1_id in sorted(char_dict.keys()):
+        for char2_id in sorted(char_dict.keys()):
+            # Calculate the number of matches against this character
+            total_matches = win_counts[char1_id][char2_id] + win_counts[char2_id][char1_id]
+            win_rate = win_counts[char1_id][char2_id] / total_matches
+            lower, upper = binom.interval(confidence_level, total_matches, win_rate)
+            
+            win_rates_vs[char_dict[char1_id]][char_dict[char2_id]] = win_rate
+            intervals_vs[char_dict[char1_id]][char_dict[char2_id]] = (lower / total_matches, upper / total_matches)
+            
+    for char2_name in char_dict.values():
+        for char_name in char_dict.values():
+            if intervals_vs[char2_name][char_name][1] - win_rates_vs[char2_name][char_name] <0:
+                print(f"{char2_name} vs {char_name}")
+                print(intervals_vs[char2_name][char_name][1] - win_rates_vs[char2_name][char_name])
+                
+    # win_rates_vs_df = pd.DataFrame.from_dict(win_rates_vs, orient='index')
+    return win_rates_vs, intervals_vs

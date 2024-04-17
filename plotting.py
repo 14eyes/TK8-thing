@@ -23,7 +23,7 @@ def plot_win_rates(win_rates, bracket_name='', ylim=(0.45, 0.7), date_range='unk
     plt.savefig(os.path.join(plots_dir, f'win_rates_{bracket_name}.png'))
     plt.show()
 
-def plot_win_rates_with_confidence_intervals(win_rates, confidence_intervals, bracket_name='', ylim=(0.45, 0.7), date_range='unknown'):
+def plot_win_rates_with_confidence_intervals(win_rates, confidence_intervals, bracket_name='', ylim=(0.45, 0.7), date_range='unknown', save_nested=False):
     # plot the win rates with confidence intervals
     plt.figure(figsize=(10, 5))
     sns.barplot(x=list(win_rates.keys()), y=list(win_rates.values()))
@@ -40,7 +40,11 @@ def plot_win_rates_with_confidence_intervals(win_rates, confidence_intervals, br
     plt.ylim(ylim[0], ylim[1])
     plt.xticks(rotation=90)
     plt.tight_layout()
-    plt.savefig(os.path.join(plots_dir, f'win_rates_with_confidence_intervals_{bracket_name}.png'))
+    if save_nested:
+        os.makedirs(os.path.join(plots_dir, bracket_name.split('_')[0]), exist_ok=True)
+        plt.savefig(os.path.join(plots_dir, bracket_name.split('_')[0], f'win_rates_with_confidence_intervals_{bracket_name}.png'))
+    else:
+        plt.savefig(os.path.join(plots_dir, f'win_rates_with_confidence_intervals_{bracket_name}.png'))
     plt.show()
 
 def plot_most_popular_characters(character_counts, bracket_name='', date_range='unknown'):
@@ -74,3 +78,16 @@ def plot_rank_distribution(rank_counts, date_range='unknown'):
     plt.tight_layout()
     plt.savefig(os.path.join(plots_dir, 'rank_distribution.png'))
     plt.show()
+
+def plot_win_rate_vs(win_rates_vs, bracket_name='', date_range='unknown'):
+    plt.figure(figsize=(22, 12))
+    ax = sns.heatmap(win_rates_vs, annot=True, cmap="YlGnBu", fmt=".2%", linewidths=.5, annot_kws={"size": 8})
+    plt.title(f'Character Matchup Win Rate_{bracket_name}')
+    plt.text(0.99, 1.05, date_range, verticalalignment='top', horizontalalignment='right', transform=ax.transAxes)
+    plt.xlabel('Opponent Character')
+    plt.ylabel('Character')
+    plt.xticks(rotation=90)
+    plt.tight_layout()
+    plt.savefig(os.path.join(plots_dir, f'win_rates_vs_{bracket_name}.png'))
+    plt.show()
+    
